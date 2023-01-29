@@ -3,7 +3,7 @@
 
 #include <cstdint>
 #include <cstring>
-#include <mysql/mysql.h>
+#include <mysql.h>
 
 #include <string>
 #include <vector>

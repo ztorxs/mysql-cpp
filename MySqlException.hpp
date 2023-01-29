@@ -1,7 +1,7 @@
 #ifndef MY_SQL_EXCEPTION_HPP_
 #define MY_SQL_EXCEPTION_HPP_
 
-#include <mysql/mysql.h>
+#include <mysql.h>
 
 #include <exception>
 #include <string>

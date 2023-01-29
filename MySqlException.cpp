@@ -1,7 +1,7 @@
 #include "MySqlException.hpp"
 #include "MySqlPreparedStatement.hpp"
 
-#include <mysql/mysql.h>
+#include <mysql.h>
 #include <string>
 
 using std::string;

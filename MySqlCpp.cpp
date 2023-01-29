@@ -1,9 +1,9 @@
-#include "MySql.hpp"
+#include "MySqlCpp.hpp"
 #include "MySqlException.hpp"
 
 #include <cassert>
 #include <cstdint>
-#include <mysql/mysql.h>
+#include <mysql.h>
 
 #include <string>
 #include <sstream>

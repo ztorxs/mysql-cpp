@@ -2,9 +2,9 @@
 #define OUTPUTBINDER_HPP_
 
 #include <cstdint>
-#include <mysql/mysql.h>
+#include <mysql.h>
 
-#include <boost/lexical_cast.hpp>
+//#include <boost/lexical_cast.hpp>
 #include <memory>
 #include <string>
 #include <tuple>
@@ -121,7 +121,7 @@ void bindParameters(
     const Tuple& tuple,  // We only need this so we can access the element types
     std::vector<MYSQL_BIND>* const mysqlBindParameters,
     std::vector<std::vector<char>>* const buffers,
-    std::vector<my_bool> const nullFlags,
+    std::vector<uint8_t> const nullFlags,
     int_<I>
 );
 template<typename Tuple>
@@ -129,7 +129,7 @@ void bindParameters(
     const Tuple& tuple,  // We only need this so we can access the element types
     std::vector<MYSQL_BIND>* const,
     std::vector<std::vector<char>>* const,
-    std::vector<my_bool> const,
+    std::vector<uint8_t> const,
     int_<-1>
 );
 template <typename T>
@@ -144,7 +144,7 @@ class OutputBinderParameterSetter {
         static void setParameter(
             MYSQL_BIND* const bind,
             std::vector<char>* const buffer,
-            my_bool* const isNullFlag);
+            uint8_t* const isNullFlag);
 };
 template<typename T>
 class OutputBinderParameterSetter<std::shared_ptr<T>> {
@@ -152,7 +152,7 @@ class OutputBinderParameterSetter<std::shared_ptr<T>> {
         static void setParameter(
             MYSQL_BIND* const bind,
             std::vector<char>* const buffer,
-            my_bool* const isNullFlag);
+            uint8_t* const isNullFlag);
 };
 template<typename T>
 class OutputBinderParameterSetter<std::unique_ptr<T>> {
@@ -160,7 +160,7 @@ class OutputBinderParameterSetter<std::unique_ptr<T>> {
         static void setParameter(
             MYSQL_BIND* const bind,
             std::vector<char>* const buffer,
-            my_bool* const isNullFlag);
+            uint8_t* const isNullFlag);
 };
 template<typename T>
 class OutputBinderParameterSetter<T*> {
@@ -168,7 +168,7 @@ class OutputBinderParameterSetter<T*> {
         static void setParameter(
             MYSQL_BIND* const,
             std::vector<char>* const,
-            my_bool* const);
+            uint8_t* const);
 };
 
 
@@ -202,7 +202,7 @@ void bindParameters(
     const Tuple&,  // We only need this so we can access the element types
     std::vector<MYSQL_BIND>* const,
     std::vector<std::vector<char>>* const,
-    std::vector<my_bool>* const,
+    std::vector<uint8_t>* const,
     int_<-1>
 ) {
 }
@@ -213,7 +213,7 @@ void bindParameters(
     const Tuple& tuple,  // We only need this so we can access the element types
     std::vector<MYSQL_BIND>* const mysqlBindParameters,
     std::vector<std::vector<char>>* const buffers,
-    std::vector<my_bool>* const nullFlags,
+    std::vector<uint8_t>* const nullFlags,
     int_<I>
 ) {
     OutputBinderParameterSetter<
@@ -345,7 +345,7 @@ template <typename T>
 void OutputBinderParameterSetter<T>::setParameter(
     MYSQL_BIND* const bind,
     std::vector<char>* const buffer,
-    my_bool* const isNullFlag
+    uint8_t* const isNullFlag
 ) {
     bind->buffer_type = MYSQL_TYPE_STRING;
     if (0 == buffer->size()) {
@@ -355,7 +355,7 @@ void OutputBinderParameterSetter<T>::setParameter(
         buffer->resize(20);
     }
     bind->buffer = buffer->data();
-    bind->is_null = isNullFlag;
+    bind->is_null = reinterpret_cast<bool*>(isNullFlag);
     bind->buffer_length = buffer->size();
 }
 // ************************************************************
@@ -365,7 +365,7 @@ template<typename T>
 void OutputBinderParameterSetter<std::shared_ptr<T>>::setParameter(
     MYSQL_BIND* const bind,
     std::vector<char>* const buffer,
-    my_bool* const isNullFlag
+    uint8_t* const isNullFlag
 ) {
     // Just forward to the full specialization
     OutputBinderParameterSetter<T>::setParameter(bind, buffer, isNullFlag);
@@ -374,7 +374,7 @@ template<typename T>
 void OutputBinderParameterSetter<std::unique_ptr<T>>::setParameter(
     MYSQL_BIND* const bind,
     std::vector<char>* const buffer,
-    my_bool* const isNullFlag
+    uint8_t* const isNullFlag
 ) {
     // Just forward to the full specialization
     OutputBinderParameterSetter<T>::setParameter(bind, buffer, isNullFlag);
@@ -386,7 +386,7 @@ template<typename T>
 void OutputBinderParameterSetter<T*>::setParameter(
     MYSQL_BIND* const,
     std::vector<char>* const,
-    my_bool* const
+    uint8_t* const
 ) {
     static_assert(
         // C++ guarantees that the sizeof any type >= 0, so this will always
@@ -406,12 +406,12 @@ struct OutputBinderParameterSetter<type> { \
         static void setParameter( \
             MYSQL_BIND* const bind, \
             std::vector<char>* const buffer, \
-            my_bool* const isNullFlag \
+            uint8_t* const isNullFlag \
         ) { \
             bind->buffer_type = mysqlType; \
             buffer->resize(sizeof(type)); \
             bind->buffer = buffer->data(); \
-            bind->is_null = isNullFlag; \
+            bind->is_null = reinterpret_cast<bool*>(isNullFlag); \
             bind->is_unsigned = isUnsigned; \
         } \
 };
@@ -442,7 +442,7 @@ void setResults(
     std::vector<MYSQL_BIND> parameters(statement.getFieldCount());
     std::vector<std::vector<char>> buffers(statement.getFieldCount());
     std::vector<mysql_bind_length_t> lengths(statement.getFieldCount());
-    std::vector<my_bool> nullFlags(statement.getFieldCount());
+    std::vector<uint8_t> nullFlags(statement.getFieldCount());
 
     // bindParameters needs to know the type of the tuples, and it does this by
     // taking an example tuple, so just create a dummy

@@ -4,9 +4,9 @@
 #include <cassert>
 #include <cstdint>
 #include <cstring>
-#include <mysql/mysql.h>
+#include <mysql.h>
 
-#include <boost/lexical_cast.hpp>
+//#include <boost/lexical_cast.hpp>
 #include <string>
 #include <tuple>
 #include <typeinfo>
@@ -17,14 +17,6 @@
 #include "MySqlException.hpp"
 #include "MySqlPreparedStatement.hpp"
 #include "OutputBinder.hpp"
-
-#if __GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 6)
-#ifndef nullptr
-// I know that this isn't a perfect substitution, but I'm lazy
-#define nullptr 0
-#endif
-#endif
-
 
 class MySql {
     public:
@@ -138,10 +130,9 @@ my_ulonglong MySql::runCommand(
     if (sizeof...(args) != statement.getParameterCount()) {
         std::string errorMessage;
         errorMessage += "Incorrect number of parameters; command required ";
-        errorMessage += boost::lexical_cast<std::string>(
-            statement.getParameterCount());
+        errorMessage += std::to_string(statement.getParameterCount()); // boost::lexical_cast<std::string>(statement.getParameterCount());
         errorMessage += " but ";
-        errorMessage += boost::lexical_cast<std::string>(sizeof...(args));
+        errorMessage += std::to_string(sizeof...(args)); // boost::lexical_cast<std::string>(sizeof...(args));
         errorMessage += " parameters were provided.";
         throw MySqlException(errorMessage);
     }
@@ -204,10 +195,9 @@ void MySql::runQuery(
         std::string errorMessage;
 
         errorMessage += "Incorrect number of input parameters; query required ";
-        errorMessage += boost::lexical_cast<std::string>(
-            statement.getParameterCount());
+        errorMessage += std::to_string(statement.getParameterCount()); // boost::lexical_cast<std::string>(statement.getParameterCount());
         errorMessage += " but ";
-        errorMessage += boost::lexical_cast<std::string>(sizeof...(args));
+        errorMessage += std::to_string(sizeof...(args)); // boost::lexical_cast<std::string>(sizeof...(args));
         errorMessage += " parameters were provided.";
         throw MySqlException(errorMessage);
     }

@@ -3,14 +3,14 @@
 #include "OutputBinder.hpp"
 
 #include <cassert>
-#include <mysql/mysql.h>
+#include <mysql.h>
 
-#include <boost/lexical_cast.hpp>
+//#include <boost/lexical_cast.hpp>
 #include <string>
 #include <tuple>
 #include <vector>
 
-using boost::lexical_cast;
+//using boost::lexical_cast;
 using std::get;
 using std::string;
 using std::tuple;
@@ -26,9 +26,9 @@ void Friend::throwIfParameterCountWrong(
     if (statement.getFieldCount() != numRequiredParameters) {
         string errorMessage(
             "Incorrect number of output parameters; query required ");
-        errorMessage += lexical_cast<string>(statement.getFieldCount());
+        errorMessage += std::to_string(statement.getFieldCount()); //lexical_cast<string>;
         errorMessage += " but ";
-        errorMessage += lexical_cast<string>(numRequiredParameters);
+        errorMessage += std::to_string(numRequiredParameters); // lexical_cast<string>(numRequiredParameters);
         errorMessage += " parameters were provided";
         throw MySqlException(errorMessage);
     }

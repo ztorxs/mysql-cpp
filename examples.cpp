@@ -1,4 +1,4 @@
-#include "MySql.hpp"
+#include "MySqlCpp.hpp"
 #include "MySqlException.hpp"
 
 #include <cassert>
@@ -164,26 +164,10 @@ void printTuple(basic_ostream<Char, Traits>& out, Tuple const& t, int_<0>) {
 
 template <typename Tuple>
 void printTupleVector(const vector<Tuple>& v) {
-#if __GNUC__ >= 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6)
     for (const auto& item : v)
     {
         cout << item << endl;
     }
-#elif __GNUC__ >= 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 4)
-    auto end = v.cend();
-    for (auto item(v.cbegin()); item != end; ++item) {
-        cout << *item<< endl;
-    }
-#else
-    vector<Tuple>::const_iterator end(users.end());
-    for (
-        vector<Tuple>::const_iterator item(v.begin());
-        item != end;
-        ++item
-    ) {
-        cout << *item << endl;
-    }
-#endif
 }
 
 template<typename Char, typename Traits, typename... Args>
